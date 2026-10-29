@@ -1,0 +1,45 @@
+name: Build standalone pawncc.exe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out build scripts
+        uses: actions/checkout@v4
+
+      - name: Install compilers and PE inspection tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc gcc-mingw-w64-i686 binutils-mingw-w64-i686
+
+      - name: Build and smoke-test compiler
+        run: sh build_pawncc_exe.sh
+
+      - name: Verify Windows executable and standalone imports
+        shell: bash
+        run: |
+          test -s out/pawncc.exe
+          i686-w64-mingw32-objdump -f out/pawncc.exe | grep -q 'file format pei-i386'
+          i686-w64-mingw32-objdump -p out/pawncc.exe > out/imports.txt
+          if grep -Eqi 'DLL Name: (PAWNC\.dll|MSVCR100\.dll)' out/imports.txt; then
+            echo 'Unexpected dependency: pawncc.exe must not require pawnc.dll or MSVCR100.dll' >&2
+            cat out/imports.txt >&2
+            exit 1
+          fi
+          echo 'Windows PE and standalone dependency checks passed.'
+
+      - name: Upload Windows compiler artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pawncc-3.10.10-standalone
+          path: out/pawncc.exe
+          if-no-files-found: error
+          retention-days: 14
