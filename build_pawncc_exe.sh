@@ -24,13 +24,13 @@ SOURCES="source/compiler/hashtable/wrap_hashtable.c source/compiler/lstring.c so
 # -static links the MinGW runtime statically; Windows system DLLs remain normal imports.
 # shellcheck disable=SC2086
 (cd "$WORK_DIR/compiler" && i686-w64-mingw32-gcc -O2 -s -static \
-  -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DHAVE_ALLOCA_H \
+  -DHAVE_STDINT_H -DHAVE_INTTYPES_H \
   -Isource/compiler -Isource/amx -I"$OUT_DIR" $SOURCES -o "$OUT_DIR/pawncc.exe")
 
 # Build and exercise a native Linux copy as a smoke test of the compiler source.
 # shellcheck disable=SC2086
 (cd "$WORK_DIR/compiler" && gcc -O2 -Dstricmp=strcasecmp -include strings.h -include unistd.h \
-  -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DHAVE_ALLOCA_H \
+  -DHAVE_STDINT_H -DHAVE_INTTYPES_H \
   -Isource/compiler -Isource/amx -I"$OUT_DIR" $SOURCES -o "$OUT_DIR/pawncc-native")
 cat > "$OUT_DIR/smoke.p" <<'EOF'
 main()
