@@ -29,14 +29,14 @@ SOURCES="source/compiler/hashtable/wrap_hashtable.c source/compiler/lstring.c so
 
 # Build and exercise a native Linux copy as a smoke test of the compiler source.
 # shellcheck disable=SC2086
-(cd "$WORK_DIR/compiler" && gcc -O2 \
+(cd "$WORK_DIR/compiler" && gcc -O2 -Dstricmp=strcasecmp -include strings.h -include unistd.h \
   -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DHAVE_ALLOCA_H \
   -Isource/compiler -Isource/amx -I"$OUT_DIR" $SOURCES -o "$OUT_DIR/pawncc-native")
 cat > "$OUT_DIR/smoke.p" <<'EOF'
 main()
 {
-    print("PAWN compiler smoke test passed");
-    return 0;
+    new value = 2 + 3;
+    return value;
 }
 EOF
 "$OUT_DIR/pawncc-native" "$OUT_DIR/smoke.p" -o"$OUT_DIR/smoke.amx"
